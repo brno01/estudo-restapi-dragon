@@ -13,17 +13,18 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { ApiOperation } from '@nestjs/swagger';
-import { ApiBearerAuth, ApiConflictResponse, ApiOkResponse } from '@nestjs/swagger/dist';
+import { ApiBearerAuth, ApiBody, ApiConflictResponse, ApiOkResponse } from '@nestjs/swagger/dist';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
   @ApiConflictResponse({ description: 'User already exists with this email' })
-  async createUser(@Body() user: CreateUserDto): Promise<User> {
-    return this.usersService.createUser(user);
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    return await this.usersService.createUser(createUserDto)
   }
 
   @Get()
@@ -36,17 +37,30 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get a user by id' })
+  @ApiOkResponse({ status: 200, description: 'User fetched successfully', type: User })
+  async getOne(@Param('id') id: string): Promise<User> {
+    return this.usersService.getUserById(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update a user by id' })
+  @ApiBody({ type: UpdateUserDto })
+  @ApiOkResponse({ status: 200, description: 'User updated successfully', type: User })
+  update(@Param('id') id: string, @Body() user: UpdateUserDto): Promise<User> {
+    return this.usersService.updateUser(id, { ...user });
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a user by id' })
+  @ApiOkResponse({ status: 200, description: 'User deleted successfully', type: User })
+  async delete(@Param('id') id: string): Promise<User> {
+    return this.usersService.deleteUser(id);
   }
 }
