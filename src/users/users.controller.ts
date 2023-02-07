@@ -6,23 +6,33 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './entities/user.entity';
+import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConflictResponse, ApiOkResponse } from '@nestjs/swagger/dist';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiConflictResponse({ description: 'User already exists with this email' })
+  async createUser(@Body() user: CreateUserDto): Promise<User> {
+    return this.usersService.createUser(user);
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiOkResponse({ description: 'Users fetched successfully' })
+  @ApiBearerAuth()
+  async getAllUsers(): Promise<User[]> {
+    return this.usersService.getAllUsers();
   }
 
   @Get(':id')
