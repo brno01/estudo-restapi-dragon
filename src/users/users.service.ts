@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';	
 
 @Injectable()
 export class UsersService {
@@ -40,7 +41,8 @@ export class UsersService {
       return {
         message: 'User created successfully',
         ...userHash,
-        password: '******',
+        password: undefined,
+        user: user.id,
         ...userCreated,
       };
     }

@@ -1,7 +1,8 @@
 import { BaseCollection } from 'src/common/shared/base.entity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, Unique } from 'typeorm';
 
 @Entity()
+@Unique(['email'])
 export class User extends BaseCollection {
   @Column({ name: 'email', length: 255 })
   email: string;

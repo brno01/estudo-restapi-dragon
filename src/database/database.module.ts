@@ -17,7 +17,7 @@ dotenv.config({ path: '.development.env' });
       logging: true,
       autoLoadEntities: true,
       maxQueryExecutionTime: 1000,
-      dropSchema: false,
+      dropSchema: true,
     }),
   ],
 })
